@@ -23,7 +23,6 @@ void renderHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 int countRays = 0;
 void renderRays(pcl::visualization::PCLVisualizer::Ptr& viewer, const Vect3& origin, const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
 {
-
 	for(pcl::PointXYZ point : cloud->points)
 	{
 		viewer->addLine(pcl::PointXYZ(origin.x, origin.y, origin.z), point,1,0,0,"ray"+std::to_string(countRays));
