@@ -27,7 +27,7 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
 
-    // TODO:: Fill in the function to do voxel grid point reduction and region based filtering
+    // TODO:: Fill in the function to do voxel grid point processPointCloudduction and region based filtering
 
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
@@ -42,8 +42,16 @@ template<typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud) 
 {
   // TODO: Create two new point clouds, one cloud with obstacles and other with segmented plane
-
-    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult(cloud, cloud);
+    typename pcl::PointCloud<PointT>::Ptr planeCloud = std::make_shared<typename pcl::PointCloud<PointT>>();
+    typename pcl::PointCloud<PointT>::Ptr obstacleCloud = std::make_shared<typename pcl::PointCloud<PointT>>();
+    typename pcl::ExtractIndices<PointT> extract(true);
+    extract.setInputCloud(cloud);
+    extract.setIndices(inliers);
+    extract.filter(*planeCloud);
+    auto indices_rem = extract.getRemovedIndices();
+    extract.setIndices(indices_rem);
+    extract.filter(*obstacleCloud);
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult(planeCloud, obstacleCloud);
     return segResult;
 }
 
@@ -51,11 +59,19 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 template<typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold)
 {
+    // Segments out ground plane
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
-	pcl::PointIndices::Ptr inliers;
-    // TODO:: Fill in this function to find inliers for the cloud.
-
+	std::shared_ptr<pcl::PointIndices> inliers = std::make_shared<pcl::PointIndices>();
+    std::cout << "deets" << inliers << std::endl;
+    for (pcl::index_t i = 0; i < cloud->points.size(); ++i){
+        auto point = cloud->points[i];
+        if (std::abs(point.z) <= distanceThreshold) {
+            // std::cout << cloud->points[i] << std::endl;
+            inliers->indices.push_back(i);
+        }
+    }
+        
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "plane segmentation took " << elapsedTime.count() << " milliseconds" << std::endl;
