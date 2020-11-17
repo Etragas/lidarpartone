@@ -42,7 +42,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // ----------------------------------------------------
     
     // RENDER OPTIONS
-    bool renderScene = false;
+    bool renderScene = true;
     std::vector<Car> cars = initHighway(renderScene, viewer);
     std::shared_ptr<Lidar> lidar = std::make_shared<Lidar>(cars, 0);
     // TODO(etragas) Figure out how scan and render work
