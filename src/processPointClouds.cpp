@@ -84,12 +84,43 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 template<typename PointT>
 std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize)
 {
-
+    // Returned a vector of pointclouds, and I guess each pointcloud is a cluster
     // Time clustering process
     auto startTime = std::chrono::steady_clock::now();
 
     std::vector<typename pcl::PointCloud<PointT>::Ptr> clusters;
-
+    // while points, cluster = points.pop
+    std::set<uint> remainingIdx;
+    for (int i = 0; i < cloud->points.size(); i++) remainingIdx.insert(i);
+    while (remainingIdx.size() != 0){
+        std::cout << "Points left " << remainingIdx.size() << std::endl;
+        typename pcl::PointCloud<PointT>::Ptr new_cluster = std::make_shared<typename pcl::PointCloud<PointT>>();
+        uint centroidIdx = *(remainingIdx.begin());
+        std::set<uint> usedIdx;
+        usedIdx.insert(centroidIdx);
+        PointT& centroid = cloud->at(centroidIdx);
+        new_cluster->push_back(centroid);
+        for (uint candidateIdx: remainingIdx) {
+            PointT& candidatePoint = cloud->at(candidateIdx);
+            float distance = std::sqrt(
+                std::pow(centroid.x-candidatePoint.x, 2) +
+                std::pow(centroid.y-candidatePoint.y, 2) +
+                std::pow(centroid.z-candidatePoint.z, 2)
+                );
+            if (distance < clusterTolerance){
+                usedIdx.insert(candidateIdx);
+                new_cluster->push_back(candidatePoint);
+                if (new_cluster->size() > maxSize) break;
+            }
+        }
+        if (new_cluster->size() < minSize) continue;
+        std::set<uint> temp;
+        std::set_difference(remainingIdx.begin(), remainingIdx.end(),
+        usedIdx.begin(), usedIdx.end(),
+        std::inserter(temp, temp.begin()));
+        remainingIdx = std::move(temp);
+        clusters.push_back(new_cluster);
+    }
     // TODO:: Fill in the function to perform euclidean clustering to group detected obstacles
 
     auto endTime = std::chrono::steady_clock::now();
