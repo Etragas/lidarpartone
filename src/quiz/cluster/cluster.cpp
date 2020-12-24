@@ -3,6 +3,7 @@
 
 #include "../../render/render.h"
 #include "../../render/box.h"
+#include <unordered_set>
 #include <chrono>
 #include <string>
 #include "kdtree.h"
@@ -44,7 +45,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr CreateData(std::vector<std::vector<float>> p
 }
 
 
-void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Box window, int& iteration, uint depth=0)
+void render2DTree(std::shared_ptr<Node> node, pcl::visualization::PCLVisualizer::Ptr& viewer, Box window, int& iteration, uint depth=0)
 {
 
 	if(node!=NULL)
@@ -79,8 +80,26 @@ std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<flo
 {
 
 	// TODO: Fill out this function to return list of indices for each cluster
-
+	// For point in points
+	std::unordered_set<int> touched;
 	std::vector<std::vector<int>> clusters;
+	int idx = -1;
+	for (auto point: points) {
+		idx++;
+		if (touched.find(idx) != touched.end()) continue;
+		std::vector<int> new_cluster;
+		touched.insert(idx);
+		new_cluster.push_back(idx);
+
+		for (int cidx: tree->search(point, distanceTol)) {
+			if (touched.find(cidx) != touched.end()) continue;
+			touched.insert(cidx);
+			new_cluster.push_back(cidx);
+		}
+		clusters.push_back(new_cluster);	
+	}
+
+	
  
 	return clusters;
 
@@ -110,6 +129,8 @@ int main ()
     	tree->insert(points[i],i); 
 
   	int it = 0;
+
+  	std::cout << "Found root" << tree->root->point[0] << std::endl;
   	render2DTree(tree->root,viewer,window, it);
   
   	std::cout << "Test Search" << std::endl;
