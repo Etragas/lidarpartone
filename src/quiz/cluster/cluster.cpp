@@ -76,35 +76,6 @@ void render2DTree(std::shared_ptr<Node> node, pcl::visualization::PCLVisualizer:
 
 }
 
-std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
-{
-
-	// TODO: Fill out this function to return list of indices for each cluster
-	// For point in points
-	std::unordered_set<int> touched;
-	std::vector<std::vector<int>> clusters;
-	int idx = -1;
-	for (auto point: points) {
-		idx++;
-		if (touched.find(idx) != touched.end()) continue;
-		std::vector<int> new_cluster;
-		touched.insert(idx);
-		new_cluster.push_back(idx);
-
-		for (int cidx: tree->search(point, distanceTol)) {
-			if (touched.find(cidx) != touched.end()) continue;
-			touched.insert(cidx);
-			new_cluster.push_back(cidx);
-		}
-		clusters.push_back(new_cluster);	
-	}
-
-	
- 
-	return clusters;
-
-}
-
 int main ()
 {
 
@@ -142,7 +113,7 @@ int main ()
   	// Time segmentation process
   	auto startTime = std::chrono::steady_clock::now();
   	//
-  	std::vector<std::vector<int>> clusters = euclideanCluster(points, tree, 3.0);
+  	std::vector<std::vector<int>> clusters = EuclideanCluster(points, tree, 3.0);
   	//
   	auto endTime = std::chrono::steady_clock::now();
   	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
