@@ -94,7 +94,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     auto startTime = std::chrono::steady_clock::now();
 	std::shared_ptr<pcl::PointIndices> inliers = std::make_shared<pcl::PointIndices>();
     std::cout << "deets" << inliers << std::endl;
-    for (pcl::index_t i = 0; i < cloud->points.size(); ++i){
+    for (int i = 0; i < cloud->points.size(); ++i){
         auto point = cloud->points[i];
         if ( (planeHeight - 0.4 <= point.z) && (point.z <= planeHeight + 0.4)) {
             // std::cout << cloud->points[i] << std::endl;
