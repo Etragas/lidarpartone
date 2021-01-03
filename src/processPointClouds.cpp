@@ -54,7 +54,7 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
     boxFilter.setInputCloud(cloud);
     boxFilter.filter(roofIndices);
 
-    pcl::PointIndices::Ptr roofPoints = std::make_shared<pcl::PointIndices>();
+    pcl::PointIndices::Ptr roofPoints(new pcl::PointIndices);
     for (int point: roofIndices) {
         roofPoints->indices.push_back(point);
     }
@@ -92,7 +92,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     // Segments out ground plane
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
-	std::shared_ptr<pcl::PointIndices> inliers = std::make_shared<pcl::PointIndices>();
+	pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
     std::cout << "deets" << inliers << std::endl;
     for (int i = 0; i < cloud->points.size(); ++i){
         auto point = cloud->points[i];
